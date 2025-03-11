@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "953183690774",
+    "project_id": "snipp-code",
+    "storage_bucket": "snipp-code.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953183690774:android:c9e78df34494ffa5755537",
+        "android_client_info": {
+          "package_name": "com.arc.snipp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZ9Sgx0wkzaPUhesbSHZvRUZPmZVZZYRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
