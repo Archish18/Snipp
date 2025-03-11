@@ -4,18 +4,33 @@ const { v4: uuid } = require('uuid');
 
 async function runCppCode(code) {
   const filename = `${uuid()}`;
-  const filepath = `/tmp/${filename}`;
-  const cppFile = `${filepath}.cpp`;
-  const outFile = `${filepath}.out`;
+  const cppPath = `/tmp/${filename}.cpp`;
+  const outPath = `/tmp/${filename}.out`;
 
-  await fs.writeFile(cppFile, code);
+  await fs.writeFile(cppPath, code);
 
   return new Promise((resolve) => {
-    exec(`g++ ${cppFile} -o ${outFile} && ${outFile}`, (err, stdout, stderr) => {
-      if (err) resolve(stderr);
-      else resolve(stdout);
-      fs.unlink(cppFile);
-      fs.unlink(outFile);
+    exec(`g++ ${cppPath} -o ${outPath}`, (compileErr, _, compileStderr) => {
+      if (compileErr) {
+        fs.unlink(cppPath);
+        resolve(compileStderr);
+        return;
+      }
+
+      exec(`timeout 5s ${outPath}`, (runErr, stdout, stderr) => {
+        fs.unlink(cppPath);
+        fs.unlink(outPath);
+
+        if (runErr) {
+          if (runErr.signal === 'SIGTERM') {
+            resolve("Error: Code execution timed out.");
+          } else {
+            resolve(stderr || runErr.message);
+          }
+        } else {
+          resolve(stdout);
+        }
+      });
     });
   });
 }
