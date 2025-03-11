@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { runPythonCode } = require('./runner/pythonrunner');
-const { runCppCode } = require('./runner/cpprunner');
+const { runPythonCode } = require('./backend/runner/pythonrunner');
+const { runCppCode } = require('./backend/runner/cpprunner');
 
 const app = express();
 app.use(cors());
