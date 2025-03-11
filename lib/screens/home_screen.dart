@@ -1,10 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../services/backend_service.dart';
-import '../services/ai_service.dart';
-import '../widgets/output_box.dart';
-import '../widgets/ai_suggestion_widget.dart';
-import '../widgets/code_editor_widget.dart';
+import 'package:snipp/widgets/output_box.dart';
+import 'package:snipp/services/backend_service.dart';
+import 'package:snipp/services/ai_service.dart';
+import 'package:snipp/widgets/code_editor_widget.dart'; // Make sure this is implemented
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,12 +11,23 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String language = 'python';
   String output = '';
   String aiSuggestion = '';
   String code = '';
   bool isLoading = false;
+
+  late AnimationController _fadeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+  }
 
   void runCode() async {
     setState(() => isLoading = true);
@@ -27,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       output = result;
       isLoading = false;
     });
+    _fadeController.forward(from: 0);
   }
 
   void fixErrorsAI() async {
@@ -36,14 +46,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       aiSuggestion = suggestion;
       isLoading = false;
     });
+    _fadeController.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.black,
         title: const Text("Snipp Code Editor"),
         actions: [
           DropdownButton<String>(
@@ -55,104 +66,83 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 .map((lang) => DropdownMenuItem(value: lang, child: Text(lang)))
                 .toList(),
             onChanged: (value) => setState(() => language = value!),
-          )
+          ),
+          const SizedBox(width: 12),
         ],
       ),
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
-            child: Column(
-              children: [
-                CodeEditorWidget(
-                  onCodeChanged: (val) => code = val,
-                  language: language,
-                ),
-                const SizedBox(height: 10),
-                GlassBox(title: "Output", content: output),
-                const SizedBox(height: 10),
-                GlassBox(title: "AI Suggestion", content: aiSuggestion),
-              ],
-            ),
-          ),
-
-          // Loading Overlay
-          if (isLoading)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const CircularProgressIndicator(color: Colors.greenAccent),
+            padding: const EdgeInsets.only(bottom: 80),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  CodeEditorWidget(
+                    language: language,
+                    onCodeChanged: (val) => code = val,
+                  ),
+                  const SizedBox(height: 10),
+                  AnimatedOpacity(
+                    opacity: output.isNotEmpty ? 1 : 0,
+                    duration: const Duration(milliseconds: 500),
+                    child: OutputBox(
+                      title: "Output",
+                      content: output,
+                      glass: true,
+                    ),
+                  ),
+                  AnimatedOpacity(
+                    opacity: aiSuggestion.isNotEmpty ? 1 : 0,
+                    duration: const Duration(milliseconds: 500),
+                    child: OutputBox(
+                      title: "AI Suggestion",
+                      content: aiSuggestion,
+                      glass: true,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ],
-      ),
-
-      // Floating Action Buttons
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            backgroundColor: Colors.greenAccent,
-            onPressed: runCode,
-            icon: const Icon(Icons.play_arrow),
-            label: const Text("Run"),
           ),
-          const SizedBox(height: 15),
-          FloatingActionButton.extended(
-            backgroundColor: Colors.orangeAccent,
-            onPressed: fixErrorsAI,
-            icon: const Icon(Icons.auto_fix_high),
-            label: const Text("AI Fix"),
+
+          // 🔄 Custom Loading Spinner
+          if (isLoading)
+            const Center(
+              child: CircularProgressIndicator(
+                color: Colors.greenAccent,
+              ),
+            ),
+
+          // 🟢 Floating Run & AI Fix Buttons
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: Column(
+              children: [
+                FloatingActionButton.extended(
+                  backgroundColor: Colors.green,
+                  onPressed: runCode,
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text("Run"),
+                ),
+                const SizedBox(height: 15),
+                FloatingActionButton.extended(
+                  backgroundColor: Colors.orange,
+                  onPressed: fixErrorsAI,
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text("AI Fix"),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-// Glassmorphism-style Output Box
-class GlassBox extends StatelessWidget {
-  final String title;
-  final String content;
-
-  const GlassBox({super.key, required this.title, required this.content});
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 5),
-              Text(content,
-                  style: const TextStyle(
-                      color: Colors.greenAccent,
-                      fontFamily: 'SourceCodePro',
-                      fontSize: 14)),
-            ],
-          ),
-        ),
-      ),
-    );
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 }
