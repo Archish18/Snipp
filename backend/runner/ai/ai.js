@@ -1,10 +1,10 @@
-// backend/ai/aiService.js
-
-async function getAISuggestion(code) {
-    // Placeholder logic — this is a dummy suggestion.
-    // Replace this with real AI API call (like OpenAI) later.
-    return `// AI Suggestion:\nConsider improving variable names and modularizing functions.`;
+async function getAISuggestion(code, language) {
+  // Placeholder AI logic - you can integrate OpenAI or other services later
+  if (code.includes('print')) {
+    return "You are using print. Did you mean to format it better?";
   }
-  
-  module.exports = { getAISuggestion };
-  
+
+  return "No issues found, code looks fine.";
+}
+
+module.exports = { getAISuggestion };

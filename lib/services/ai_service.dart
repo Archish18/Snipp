@@ -7,7 +7,7 @@ class AIService {
   static Future<String> analyzeCode(String code, String language) async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/ai-analyze"),
+        Uri.parse("$baseUrl/ai/suggestion"),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'code': code, 'language': language}),
       );
