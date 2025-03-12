@@ -8,7 +8,7 @@ class BackendService {
   static Future<String> executeCode(String code, String language) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/execute'),
+        Uri.parse('$baseUrl/execute/$language'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'code': code,
