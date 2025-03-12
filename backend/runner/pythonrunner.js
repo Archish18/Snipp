@@ -5,23 +5,32 @@ const { v4: uuid } = require('uuid');
 async function runPythonCode(code) {
   const filename = `${uuid()}.py`;
   const filepath = `/tmp/${filename}`;
-  await fs.writeFile(filepath, code);
 
-  return new Promise((resolve, reject) => {
-    exec(`timeout 5s python3 ${filepath}`, (err, stdout, stderr) => {
-      fs.unlink(filepath); // Clean up
+  try {
+    // Save code to a temporary file
+    await fs.writeFile(filepath, code);
 
-      if (err) {
-        if (err.signal === 'SIGTERM') {
-          resolve("Error: Code execution timed out.");
+    return new Promise((resolve) => {
+      // Execute code with timeout
+      exec(`timeout 10s python3 ${filepath}`, (err, stdout, stderr) => {
+        // Clean up temp file after execution
+        fs.unlink(filepath).catch(() => {});
+
+        if (err) {
+          // If execution exceeded time limit
+          if (err.signal === 'SIGTERM') {
+            resolve("❌ Error: Code execution timed out after 10 seconds.");
+          } else {
+            resolve(stderr || err.message);
+          }
         } else {
-          resolve(stderr || err.message);
+          resolve(stdout || "✅ Code executed successfully but returned no output.");
         }
-      } else {
-        resolve(stdout);
-      }
+      });
     });
-  });
+  } catch (e) {
+    return `❌ Internal server error: ${e.message}`;
+  }
 }
 
 module.exports = { runPythonCode };

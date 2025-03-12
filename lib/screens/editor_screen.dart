@@ -24,7 +24,6 @@ class _EditorScreenState extends State<EditorScreen> with SingleTickerProviderSt
 
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
-  
 
   @override
   void initState() {
@@ -115,51 +114,67 @@ class _EditorScreenState extends State<EditorScreen> with SingleTickerProviderSt
       ),
       body: Stack(
         children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text("User ID: $userId", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                ),
-              ),
-              Expanded(
-                child: CodeField(
-                  controller: _codeController,
-                  textStyle: const TextStyle(fontFamily: 'SourceCodePro', color: Colors.white),
-                ),
-              ),
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.all(12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                      )
-                    ],
-                  ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
-                    "Output:\n$output",
-                    style: const TextStyle(
-                      color: Colors.greenAccent,
-                      fontFamily: 'Courier',
-                      fontSize: 14,
+                    "User ID: $userId",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: CodeField(
+                    controller: _codeController,
+                    textStyle: const TextStyle(fontFamily: 'SourceCodePro', color: Colors.white),
+                    minLines: 15,
+                    maxLines: null,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (output.isNotEmpty)
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            "Output:\n$output",
+                            style: const TextStyle(
+                              color: Colors.greenAccent,
+                              fontFamily: 'Courier',
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 60), // for FAB spacing
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
           if (isLoading)
             const Center(
