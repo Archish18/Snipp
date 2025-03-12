@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AIService {
-  static const baseUrl = "https://your-render-backend-url.onrender.com";
+  static const baseUrl = "https://snipp-1.onrender.com";
 
   static Future<String> analyzeCode(String code, String language) async {
     try {

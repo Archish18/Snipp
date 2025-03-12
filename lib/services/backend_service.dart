@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class BackendService {
-  static const String baseUrl = 'https://your-render-backend-url.com'; // 🔁 Replace this with your Render URL
+  static const String baseUrl = 'https://snipp-1.onrender.com'; // 🔁 Replace this with your Render URL
 
   // Run Code (Python / C++)
   static Future<String> executeCode(String code, String language) async {
