@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { runPythonCode } = require('./backend/runner/pythonrunner');
-const { runCppCode } = require('./backend/runner/cpprunner');
-const { getAISuggestion } = require('./backend/ai/aiService'); // NEW import
+const { runPythonCode } = require('./backend/runner/pythonrunner.js');
+const { runCppCode } = require('./backend/runner/cpprunner.js');
+const { getAISuggestion } = require('./backend/runner/ai/ai.js'); // NEW import
 
 const app = express();
 app.use(cors());
