@@ -10,10 +10,10 @@ class CodeEditorWidget extends StatefulWidget {
   final Function(String) onCodeChanged;
 
   const CodeEditorWidget({
-    Key? key,
+    super.key,
     required this.language,
     required this.onCodeChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<CodeEditorWidget> createState() => _CodeEditorWidgetState();
