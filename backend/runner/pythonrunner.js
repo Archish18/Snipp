@@ -1,35 +1,56 @@
 const fs = require('fs-extra');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const { v4: uuid } = require('uuid');
 
-async function runPythonCode(code) {
+async function runPythonCode(code, input = "") {
   const filename = `${uuid()}.py`;
   const filepath = `/tmp/${filename}`;
 
   try {
-    // Save code to a temporary file
+    // Write code to temp file
     await fs.writeFile(filepath, code);
 
     return new Promise((resolve) => {
-      // Execute code with timeout
-      exec(`timeout 10s python3 ${filepath}`, (err, stdout, stderr) => {
-        // Clean up temp file after execution
+      const process = spawn('python3', [filepath]);
+
+      let stdout = '';
+      let stderr = '';
+
+      // Handle stdout
+      process.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      // Handle stderr
+      process.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      // Write input to stdin
+      if (input && input.trim() !== "") {
+        process.stdin.write(input);
+      }
+      process.stdin.end();
+
+      // Timeout handler
+      const timeout = setTimeout(() => {
+        process.kill('SIGTERM');
+        resolve('❌ Error: Code execution timed out after 10 seconds.');
+      }, 10000);
+
+      process.on('close', (code) => {
+        clearTimeout(timeout);
         fs.unlink(filepath).catch(() => {});
 
-        if (err) {
-          // If execution exceeded time limit
-          if (err.signal === 'SIGTERM') {
-            resolve("❌ Error: Code execution timed out after 10 seconds.");
-          } else {
-            resolve(stderr || err.message);
-          }
-        } else {
+        if (code === 0) {
           resolve(stdout || "✅ Code executed successfully but returned no output.");
+        } else {
+          resolve(stderr || `❌ Code exited with code ${code}`);
         }
       });
     });
-  } catch (e) {
-    return `❌ Internal server error: ${e.message}`;
+  } catch (err) {
+    return `❌ Internal server error: ${err.message}`;
   }
 }
 

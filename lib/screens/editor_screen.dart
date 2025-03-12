@@ -48,9 +48,32 @@ class _EditorScreenState extends State<EditorScreen> with SingleTickerProviderSt
   }
 
   void runCode() async {
+    final code = _codeController.text;
+
+    if (code.contains('input(')) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text("⚠️ Unsupported Feature", style: TextStyle(color: Colors.white)),
+          content: const Text(
+            "Interactive input (like input()) is not supported in this editor.\n\n"
+            "Please replace input() with a hardcoded value.",
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("OK", style: TextStyle(color: Colors.cyanAccent)),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
 
-    final code = _codeController.text;
     final result = await BackendService.executeCode(code, selectedLanguage);
 
     FirebaseService.saveCodeHistory(code, result, selectedLanguage);
@@ -65,7 +88,31 @@ class _EditorScreenState extends State<EditorScreen> with SingleTickerProviderSt
 
   void showAISuggestions() async {
     final code = _codeController.text;
-    final suggestion = await BackendService.getAISuggestion(code);
+
+    if (code.contains('input(')) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text("⚠️ Unsupported Feature", style: TextStyle(color: Colors.white)),
+          content: const Text(
+            "AI suggestions may not work correctly on code using input(), since interactive input is not supported.\n\n"
+            "Please use static values in your code.",
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("OK", style: TextStyle(color: Colors.cyanAccent)),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final suggestion = await BackendService.getAISuggestion(code, selectedLanguage);
+
     showModalBottomSheet(
       context: context,
       builder: (_) => AISuggestionWidget(suggestion: suggestion),
